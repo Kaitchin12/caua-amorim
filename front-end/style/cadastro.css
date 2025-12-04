@@ -1,0 +1,191 @@
+/* --- CONFIGURAÇÕES GERAIS --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: #080710; /* Mesmo fundo escuro */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh; /* Garante que cubra a tela toda */
+    overflow: hidden; 
+    color: #fff;
+}
+
+/* --- FUNDO ANIMADO (Novas Cores) --- */
+.background {
+    width: 430px;
+    height: 520px;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
+}
+
+.shape {
+    height: 200px;
+    width: 200px;
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.8;
+    animation: float 6s infinite alternate;
+}
+
+/* Bola 1 - Roxo Neon */
+.shape-1 {
+    background: #9b59b6; 
+    top: -90px;
+    left: -90px;
+}
+
+/* Bola 2 - Pink Vibrante */
+.shape-2 {
+    background: #e91e63;
+    right: -40px;
+    bottom: -100px;
+    animation-delay: 1s;
+}
+
+@keyframes float {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(20px, 40px); }
+}
+
+/* --- CARTÃO DE CADASTRO (GLASSMORPHISM) --- */
+.register-card {
+    height: auto;
+    width: 450px; /* Um pouco mais largo que o login */
+    background-color: rgba(255, 255, 255, 0.05);
+    position: relative;
+    border-radius: 15px;
+    padding: 40px 35px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    z-index: 10;
+    animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.card-header h2 {
+    font-size: 32px;
+    font-weight: 600;
+    text-shadow: 0 0 10px rgba(255,255,255,0.3);
+}
+
+.card-header p {
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 5px;
+}
+
+/* --- INPUTS INTERATIVOS --- */
+.input-box {
+    position: relative;
+    width: 100%;
+    margin-bottom: 25px; /* Espaçamento ajustado */
+    border-bottom: 2px solid rgba(255,255,255,0.2);
+    transition: border-color 0.3s;
+}
+
+.input-box:focus-within {
+    border-color: #e91e63; /* Borda rosa ao focar nesta página */
+}
+
+.input-box input {
+    width: 100%;
+    height: 40px;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    color: #fff;
+    padding: 0 35px 0 5px;
+}
+
+.input-box label {
+    position: absolute;
+    top: 50%;
+    left: 5px;
+    transform: translateY(-50%);
+    color: rgba(255,255,255,0.5);
+    font-size: 16px;
+    pointer-events: none;
+    transition: 0.3s ease;
+}
+
+.input-box .icon {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255,255,255,0.5);
+    font-size: 14px;
+}
+
+/* Efeito Label Flutuante */
+.input-box input:focus ~ label,
+.input-box input:valid ~ label {
+    top: -5px;
+    font-size: 12px;
+    color: #e91e63; /* Label fica rosa também */
+    text-shadow: 0 0 5px rgba(233, 30, 99, 0.4);
+}
+
+/* --- BOTÃO DE CADASTRO --- */
+.btn-register {
+    width: 100%;
+    background: #fff;
+    color: #080710;
+    padding: 15px 0;
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+    margin-top: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(255,255,255,0.1);
+}
+
+.btn-register:hover {
+    background: #e91e63; /* Botão vira rosa */
+    color: #fff;
+    box-shadow: 0 0 20px #e91e63, 0 0 40px #e91e63;
+    transform: scale(1.02);
+}
+
+/* --- LINK LOGIN --- */
+.login-link {
+    margin-top: 25px;
+    text-align: center;
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+}
+
+.login-link a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.login-link a:hover {
+    color: #e91e63;
+    text-decoration: underline;
+}

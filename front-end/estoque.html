@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockMaster - Estoque</title>
+    <link rel="stylesheet" href="style/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-boxes-stacked"></i> StockMaster
+        </div>
+        
+        <a href="index.html" class="menu-btn">
+            <i class="fa-solid fa-chart-line"></i> Visão Geral
+        </a>
+        
+        <a href="estoque.html" class="menu-btn active">
+            <i class="fa-solid fa-screwdriver-wrench"></i> Estoque
+        </a>
+
+      
+    </nav>
+
+    <main class="main-content fade-in">
+        <h1 class="header-title">Gerenciamento de Estoque</h1>
+
+        <div class="table-container">
+            <div class="toolbar">
+                <div class="search-box">
+                    <i class="fa-solid fa-search" style="color: #95a5a6; margin-right: 10px;"></i>
+                    <input type="text" placeholder="Buscar ferramenta..." class="search-input">
+                </div>
+                <button class="btn-add">
+                    <i class="fa-solid fa-plus"></i> Novo Item
+                </button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item / Modelo</th>
+                        <th>Características Específicas</th>
+                        <th>Categoria</th>
+                        <th>Estoque</th>
+                        <th>Mínimo</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                   </tbody>
+            </table>
+            
+            <div style="text-align: center; padding: 40px; color: #95a5a6;">
+                <i class="fa-regular fa-folder-open" style="font-size: 40px; margin-bottom: 10px; display: block;"></i>
+                <p>Nenhum item encontrado no estoque.</p>
+            </div>
+            
+        </div>
+    </main>
+
+</body>
+</html>

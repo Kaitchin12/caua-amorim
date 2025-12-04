@@ -1,0 +1,18 @@
+create database saep_db_new;
+use saep_db_new;
+
+create table usuario (
+id int primary key auto_increment,
+nome varchar(100),
+email varchar(100),
+senha varchar(100)
+);
+
+
+create table produto (
+id int auto_increment primary key,
+nome_prod varchar(100),
+preco float,
+quantidade int
+);
+
