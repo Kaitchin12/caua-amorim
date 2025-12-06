@@ -1,36 +1,81 @@
-
+// --- VARIÁVEIS DO MODAL (Mantido) ---
 var modal = document.getElementById("myModal");
-var btn = document.getElementById("myBtn");
+var btn = document.getElementById("myBtn"); // Botão que abre o modal
 var span = document.getElementsByClassName("close")[0];
 
-btn.onclick = function() { modal.style.display = "flex"; }
-span.onclick = function() { modal.style.display = "none"; }
+if(btn) btn.onclick = function() { modal.style.display = "flex"; }
+if(span) span.onclick = function() { modal.style.display = "none"; }
 window.onclick = function(event) {
   if (event.target == modal) { modal.style.display = "none"; }
 }
 
-
-
-
+// --- REFERÊNCIAS ---
 const formulario = document.querySelector(".formulario-modal");
+// Seleciona o TBODY de dentro da sua tabela específica
+const tbodyTabela = document.querySelector(".tabela-pagina-estoque tbody");
+
+// --- FUNÇÃO PRINCIPAL: Carregar e Exibir na Tabela ---
+async function carregarProdutos() {
+    try {
+        const response = await fetch('http://localhost:2005/mostrarProduto');
+        const produtos = await response.json();
+
+        // 1. Limpa o tbody para não duplicar linhas
+        tbodyTabela.innerHTML = "";
+
+        // 2. Percorre os produtos vindos do banco
+        produtos.forEach(produto => {
+            const tr = document.createElement("tr");
+
+            // Define valores padrão caso o banco não tenha essas colunas ainda
+            const caracteristicas = produto.caracteristicas || "-"; 
+            const categoria = produto.categoria || "Geral";
+            const minimo = produto.estoque_minimo || 5; // Exemplo: mínimo padrão é 5
+            
+            // Lógica simples para o Status
+            let statusTexto = "OK";
+            let statusCor = "green"; // Estilo visual (opcional)
+            
+            if (produto.quantidade <= minimo) {
+                statusTexto = "Baixo";
+                statusCor = "red";
+            } else if (produto.quantidade == 0) {
+                statusTexto = "Indisponível";
+                statusCor = "gray";
+            }
+
+          
+            tr.innerHTML = `
+                <td>${produto.nome_prod}</td>             <td>${caracteristicas}</td>               <td>${categoria}</td>                     <td>${produto.quantidade} un.</td>        <td>${minimo}</td>                        <td style="color: ${statusCor}; font-weight: bold;">
+                    ${statusTexto}                        </td>
+                <td>                                      <button class="btn-editar" onclick="editarProduto(${produto.id})">✏️</button>
+                    <button class="btn-excluir" onclick="excluirProduto(${produto.id})">🗑️</button>
+                </td>
+            `;
+
+            tbodyTabela.appendChild(tr);
+        });
+
+    } catch (error) {
+        console.error("Erro ao carregar tabela:", error);
+    }
+}
+
 
 formulario.addEventListener("submit", async (event) => {
     event.preventDefault(); 
 
 
-
     let nomeProd = document.querySelector(".input-nome-modal").value;
-    let precoProd = document.querySelector(".input-preco").value;
+    let precoProd = document.querySelector(".input-preco").value; // Se não usar na tabela, fica só no banco
     let qtdProd = document.querySelector(".input-quantidade").value;
 
- 
     const dadosProduto = {
         nome_prod: nomeProd, 
         preco: parseFloat(precoProd),
         quantidade: parseInt(qtdProd) 
-    };
 
-    
+    };
 
     try {
         const response = await fetch('http://localhost:2005/produtoCadastro', {
@@ -45,7 +90,10 @@ formulario.addEventListener("submit", async (event) => {
             alert("Sucesso: Produto cadastrado!"); 
             modal.style.display = "none";
             formulario.reset(); 
-           
+            
+            // ATUALIZA A TABELA IMEDIATAMENTE APÓS O CADASTRO
+            carregarProdutos(); 
+            
         } else {
             alert("Erro do servidor: " + respostaTexto);
         }
@@ -55,3 +103,21 @@ formulario.addEventListener("submit", async (event) => {
         alert("Erro ao conectar com o servidor.");
     }
 });
+
+// --- EXECUTA AO ABRIR A PÁGINA ---
+// Assim que a tela carrega, ele busca os dados
+document.addEventListener("DOMContentLoaded", () => {
+    carregarProdutos();
+});
+
+// Funções placeholder para os botões (para não dar erro no clique)
+function editarProduto(id) {
+    alert("Função de editar o ID " + id + " será implementada.");
+}
+
+function excluirProduto(id) {
+    if(confirm("Tem certeza que deseja excluir o ID " + id + "?")) {
+     
+        alert("Excluído (simulação)");
+    }
+}

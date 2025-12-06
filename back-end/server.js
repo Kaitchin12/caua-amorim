@@ -92,20 +92,20 @@ app.post("/produtoCadastro", (req, res) => {
 
 
 
-app.get("/mostrarProduto", (res) => {
- 
+    app.get("/mostrarProduto", (req,res) => {
+    
 
-    const sql = `SELECT * FROM produto `;
+        const sql = `SELECT * FROM produto `;
 
-    connection.query(sql, (err, results) => {
-        if (err) {
-            console.error("Erro ao listar Produtos:", err.message);
-            return res.status(500).send("Erro ao buscar dados.");
-        }
+        connection.query(sql, (err, results) => {
+            if (err) {
+                console.error("Erro ao listar Produtos:", err.message);
+                return res.status(500).send("Erro ao buscar dados.");
+            }
 
-        res.json(results);
+            res.json(results);
+        });
     });
-});
 
 
 app.listen(2005, () =>
