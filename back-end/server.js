@@ -107,6 +107,21 @@ app.post("/produtoCadastro", (req, res) => {
         });
     });
 
+    app.put("/editarProduto", (req,res) => {
+          const { nome_prod, preco, quantidade } = req.body;
+
+    const sql = "UPDATE produto SET nome_prod = ?, preco = ?, quantidade = ? WHERE id = ?";
+
+    connection.query(sql, [nome_prod, preco, quantidade], (err) => {
+        if (err) {
+            console.error("Erro ao editar tarefa:", err.message);
+            return res.status(500).send("Erro ao salvar no banco.");
+        }
+
+        res.send("Tarefa editada com sucesso!");
+    });
+
+    })
 
 app.listen(2005, () =>
     console.log("Servidor rodando em http://localhost:2005/login.html")
