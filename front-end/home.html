@@ -28,7 +28,6 @@
                 <button id="btnNovaEntrada" class="btn-action" style="background-color: #2ecc71;">
                     <i class="fa-solid fa-plus-circle"></i> Registrar Entrada
                 </button>
-
                 <button id="btnNovaSaida" class="btn-action">
                     <i class="fa-solid fa-minus-circle"></i> Registrar Saída
                 </button>
@@ -59,7 +58,13 @@
                 <h2>Registrar Saída (Baixa)</h2>
                 <span class="close-saida">&times;</span>
             </div>
-            <p style="color:#666; margin-bottom:10px;">Selecione os itens para retirar do estoque:</p>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="font-weight: bold; color: #555;">Data da Saída:</label>
+                <input type="datetime-local" id="dataSaida" class="input-data" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+
+            <p style="color:#666; margin-bottom:10px;">Selecione os itens:</p>
             <div id="listaProdutosSaida"></div>
             <button id="btnConfirmarSaida" class="btn-confirmar"><i class="fa-solid fa-check"></i> Confirmar Saída</button>
         </div>
@@ -71,7 +76,13 @@
                 <h2 style="color: #2ecc71;">Registrar Entrada (Reposição)</h2>
                 <span class="close-entrada">&times;</span>
             </div>
-            <p style="color:#666; margin-bottom:10px;">Selecione os itens que chegaram:</p>
+
+            <div style="margin-bottom: 15px;">
+                <label style="font-weight: bold; color: #555;">Data da Entrada:</label>
+                <input type="datetime-local" id="dataEntrada" class="input-data" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+
+            <p style="color:#666; margin-bottom:10px;">Selecione os itens:</p>
             <div id="listaProdutosEntrada"></div>
             <button id="btnConfirmarEntrada" class="btn-confirmar" style="background-color: #2ecc71;">
                 <i class="fa-solid fa-check"></i> Confirmar Entrada

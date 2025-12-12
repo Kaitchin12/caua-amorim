@@ -11,6 +11,7 @@ const btnNovaSaida = document.getElementById("btnNovaSaida");
 const btnConfirmarSaida = document.getElementById("btnConfirmarSaida");
 const spanCloseSaida = document.querySelector(".close-saida");
 const listaContainerSaida = document.getElementById("listaProdutosSaida");
+const inputDataSaida = document.getElementById("dataSaida");
 
 // Elementos Modal ENTRADA
 const modalEntrada = document.getElementById("modalEntrada");
@@ -18,7 +19,15 @@ const btnNovaEntrada = document.getElementById("btnNovaEntrada");
 const btnConfirmarEntrada = document.getElementById("btnConfirmarEntrada");
 const spanCloseEntrada = document.querySelector(".close-entrada");
 const listaContainerEntrada = document.getElementById("listaProdutosEntrada");
+const inputDataEntrada = document.getElementById("dataEntrada");
 
+
+/* --- FUNÇÃO PARA PEGAR DATA ATUAL FORMATADA (YYYY-MM-DDTHH:MM) --- */
+function getDataAtualLocal() {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
+}
 
 /* --- AO CARREGAR A PÁGINA --- */
 window.onload = function() {
@@ -52,7 +61,6 @@ async function carregarTabelaMovimentacoes() {
             const dataObj = new Date(mov.data_movimentacao);
             const dataFormatada = dataObj.toLocaleDateString('pt-BR') + ' ' + dataObj.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
             
-            // Cor: Verde para Entrada, Vermelho para Saída
             const cor = mov.tipo === 'ENTRADA' ? 'green' : 'red';
             const ferramenta = mov.nome_produto || `ID: ${mov.id_produto}`;
             const usuario = mov.usuario || 'Sistema';
@@ -80,10 +88,18 @@ async function carregarProdutosNoModal(container, tipoMovimentacao) {
         container.innerHTML = ""; 
 
         produtos.forEach(prod => {
-            // Se for SAIDA, limitamos o max pelo estoque. Se for ENTRADA, não tem limite.
             const atributoMax = tipoMovimentacao === 'SAIDA' ? `max="${prod.quantidade}"` : '';
             const textoDisp = tipoMovimentacao === 'SAIDA' ? `(Disp: ${prod.quantidade})` : `(Atual: ${prod.quantidade})`;
             
+            // --- AVISO DE ESTOQUE BAIXO ---
+            let avisoBaixo = "";
+            const minimo = prod.estoque_minimo || 5; // Padrão 5 se não tiver definido
+            
+            // Se o estoque atual for menor ou igual ao mínimo E estivermos no modal de SAÍDA
+            if (tipoMovimentacao === 'SAIDA' && prod.quantidade <= minimo) {
+                avisoBaixo = `<span style="color: red; font-weight: bold; font-size: 0.85em; margin-left: 5px;">⚠️ ESTOQUE BAIXO!</span>`;
+            }
+
             // Cria a linha
             const div = document.createElement("div");
             div.className = "lista-item-row";
@@ -92,7 +108,7 @@ async function carregarProdutosNoModal(container, tipoMovimentacao) {
             div.innerHTML = `
                 <label style="flex:1;">
                     <input type="checkbox" value="${prod.id}" data-estoque="${prod.quantidade}">
-                    ${prod.nome_prod} ${textoDisp}
+                    ${prod.nome_prod} ${textoDisp} ${avisoBaixo}
                 </label>
                 <input type="number" class="input-qtd" placeholder="Qtd" min="1" ${atributoMax} disabled style="width:70px;">
             `;
@@ -116,27 +132,29 @@ async function carregarProdutosNoModal(container, tipoMovimentacao) {
 if(btnNovaSaida) {
     btnNovaSaida.onclick = () => {
         modalSaida.style.display = "flex";
+        inputDataSaida.value = getDataAtualLocal(); // Preenche com agora
         carregarProdutosNoModal(listaContainerSaida, 'SAIDA');
     };
 }
 if(spanCloseSaida) spanCloseSaida.onclick = () => modalSaida.style.display = "none";
 
 if(btnConfirmarSaida) {
-    btnConfirmarSaida.onclick = () => processarMovimentacao(listaContainerSaida, 'SAIDA');
+    btnConfirmarSaida.onclick = () => processarMovimentacao(listaContainerSaida, 'SAIDA', inputDataSaida.value);
 }
 
 
-/* --- 3. LÓGICA DE ENTRADA (NOVA) --- */
+/* --- 3. LÓGICA DE ENTRADA --- */
 if(btnNovaEntrada) {
     btnNovaEntrada.onclick = () => {
         modalEntrada.style.display = "flex";
+        inputDataEntrada.value = getDataAtualLocal(); // Preenche com agora
         carregarProdutosNoModal(listaContainerEntrada, 'ENTRADA');
     };
 }
 if(spanCloseEntrada) spanCloseEntrada.onclick = () => modalEntrada.style.display = "none";
 
 if(btnConfirmarEntrada) {
-    btnConfirmarEntrada.onclick = () => processarMovimentacao(listaContainerEntrada, 'ENTRADA');
+    btnConfirmarEntrada.onclick = () => processarMovimentacao(listaContainerEntrada, 'ENTRADA', inputDataEntrada.value);
 }
 
 // Fechar ao clicar fora
@@ -147,9 +165,12 @@ window.onclick = (e) => {
 
 
 /* --- 4. FUNÇÃO CENTRAL DE ENVIO (FETCH) --- */
-async function processarMovimentacao(container, tipo) {
+async function processarMovimentacao(container, tipo, dataEscolhida) {
     const checkboxes = container.querySelectorAll("input[type='checkbox']:checked");
     if (checkboxes.length === 0) return alert("Selecione itens.");
+
+    // Formata a data para MySQL (troca o T por espaço)
+    const dataFormatada = dataEscolhida.replace("T", " "); 
 
     const itens = [];
     let erro = false;
@@ -169,10 +190,11 @@ async function processarMovimentacao(container, tipo) {
 
         itens.push({
             id_produto: chk.value,
-            tipo: tipo === 'SAIDA' ? "SAIDA" : "ENTRADA", // Define o tipo aqui
+            tipo: tipo === 'SAIDA' ? "SAIDA" : "ENTRADA",
             quantidade: qtd,
             observacao: `${tipo} via Web`,
-            usuario: nomeUsuarioLogado
+            usuario: nomeUsuarioLogado,
+            data_movimentacao: dataFormatada // Envia a data escolhida
         });
     });
 

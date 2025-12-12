@@ -154,41 +154,38 @@ app.post("/produtoCadastro", (req, res) => {
 
 
 app.post('/movimentacao', (req, res) => {
-    // Garante que é um array
     const dados = Array.isArray(req.body) ? req.body : [req.body];
 
     const promessas = dados.map(item => {
         return new Promise((resolve, reject) => {
             const id_produto = item.id_produto; 
             const quantidade = item.quantidade;
-            const tipo = item.tipo; // 'ENTRADA' ou 'SAIDA'
+            const tipo = item.tipo; 
             const observacao = item.observacao || 'Sem observação';
             const usuario = item.usuario || 'Desconhecido';
+            
+            // NOVO: Recebe a data do frontend ou usa a atual se não vier nada
+            const data_mov = item.data_movimentacao ? item.data_movimentacao : new Date();
 
-            // 1. Busca nome do produto
             const sqlBuscaNome = "SELECT nome_prod FROM produto WHERE id = ?";
             
             connection.query(sqlBuscaNome, [id_produto], (err, result) => {
                 if (err) return reject(err);
                 const nomeProduto = result.length > 0 ? result[0].nome_prod : "Produto removido";
 
-                // 2. Insere no Histórico
+                // INSERE COM A DATA ESCOLHIDA
                 const sqlMov = `
-                    INSERT INTO movimentacao (id_produto, nome_produto, tipo, quantidade, observacao, usuario)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT INTO movimentacao (id_produto, nome_produto, tipo, quantidade, observacao, usuario, data_movimentacao)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                 `;
 
-                connection.query(sqlMov, [id_produto, nomeProduto, tipo, quantidade, observacao, usuario], (errInsert) => {
+                connection.query(sqlMov, [id_produto, nomeProduto, tipo, quantidade, observacao, usuario, data_mov], (errInsert) => {
                     if (errInsert) return reject(errInsert);
 
-                    // 3. Atualiza o Estoque (SOMA ou SUBTRAI)
                     let sqlUpdate = "";
-                    
                     if (tipo === 'ENTRADA') {
-                        // SOMA AO ESTOQUE
                         sqlUpdate = "UPDATE produto SET quantidade = quantidade + ? WHERE id = ?";
                     } else {
-                        // SUBTRAI DO ESTOQUE
                         sqlUpdate = "UPDATE produto SET quantidade = quantidade - ? WHERE id = ?";
                     }
 
