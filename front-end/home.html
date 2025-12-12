@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StockMaster</title>
-    
+    <title>StockMaster - Painel</title>
     <link rel="stylesheet" href="style/style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -14,31 +13,26 @@
         <div class="logo">
             <i class="fa-solid fa-boxes-stacked"></i> StockMaster
         </div>
+        <a href="#" class="menu-btn active"><i class="fa-solid fa-chart-line"></i> Visão Geral</a>
+        <a href="estoque.html" class="menu-btn"><i class="fa-solid fa-screwdriver-wrench"></i> Estoque</a>
+        <a href="login.html" class="menu-btn"><i class="fa-solid fa-right-to-bracket"></i> Logout</a>
         
-        <a href="#" class="menu-btn active">
-            <i class="fa-solid fa-chart-line"></i> Visão Geral
-        </a>
-        
-        <a href="estoque.html" class="menu-btn">
-            <i class="fa-solid fa-screwdriver-wrench"></i> Estoque
-        </a>
-
-        <a href="login.html" class="menu-btn">
-            <i class="fa-solid fa-right-to-bracket"></i> logout
-        </a>
-
-        <p class="paragrafo-para-usuario">
-
-        </p>
+        <p class="paragrafo-para-usuario"></p>
     </nav>
 
     <main class="main-content fade-in">
-        
         <div class="top-header">
             <h1 class="header-title">Painel de Controle</h1>
-            <button id="btnNovaSaida" class="btn-action">
-                <i class="fa-solid fa-minus-circle"></i> Registrar Saída
-            </button>
+            
+            <div style="display: flex; gap: 15px;">
+                <button id="btnNovaEntrada" class="btn-action" style="background-color: #2ecc71;">
+                    <i class="fa-solid fa-plus-circle"></i> Registrar Entrada
+                </button>
+
+                <button id="btnNovaSaida" class="btn-action">
+                    <i class="fa-solid fa-minus-circle"></i> Registrar Saída
+                </button>
+            </div>
         </div>
 
         <h2 style="margin-bottom: 20px; color: var(--primary-color);">Movimentações Recentes</h2>
@@ -47,9 +41,9 @@
                 <thead>
                     <tr>
                         <th>Data</th>
-                        <th>Ação</th>
+                        <th>Tipo</th>
                         <th>Ferramenta</th>
-                        <th>Quantidade</th>
+                        <th>Qtd</th>
                         <th>Usuário</th>
                     </tr>
                 </thead>
@@ -62,23 +56,29 @@
     <div id="modalSaida" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Registrar Saída de Estoque</h2>
+                <h2>Registrar Saída (Baixa)</h2>
                 <span class="close-saida">&times;</span>
             </div>
-            
-            <p style="margin-bottom: 15px; color: #666;">Selecione os itens e informe a quantidade retirada:</p>
-            
-            <div id="listaProdutosSaida">
-                <p>Carregando produtos...</p>
-            </div>
+            <p style="color:#666; margin-bottom:10px;">Selecione os itens para retirar do estoque:</p>
+            <div id="listaProdutosSaida"></div>
+            <button id="btnConfirmarSaida" class="btn-confirmar"><i class="fa-solid fa-check"></i> Confirmar Saída</button>
+        </div>
+    </div>
 
-            <button id="btnConfirmarSaida" class="btn-confirmar">
-                <i class="fa-solid fa-check"></i> Confirmar Retirada
+    <div id="modalEntrada" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="color: #2ecc71;">Registrar Entrada (Reposição)</h2>
+                <span class="close-entrada">&times;</span>
+            </div>
+            <p style="color:#666; margin-bottom:10px;">Selecione os itens que chegaram:</p>
+            <div id="listaProdutosEntrada"></div>
+            <button id="btnConfirmarEntrada" class="btn-confirmar" style="background-color: #2ecc71;">
+                <i class="fa-solid fa-check"></i> Confirmar Entrada
             </button>
         </div>
     </div>
 
-<script src="js/movimentacao.js"></script>
-<script src="js/applogin.js"></script>
+    <script src="js/movimentacao.js"></script>
 </body>
 </html>

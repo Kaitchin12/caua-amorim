@@ -154,42 +154,43 @@ app.post("/produtoCadastro", (req, res) => {
 
 
 app.post('/movimentacao', (req, res) => {
-    // Recebe os dados, incluindo o novo campo "usuario"
+    // Garante que é um array
     const dados = Array.isArray(req.body) ? req.body : [req.body];
 
     const promessas = dados.map(item => {
         return new Promise((resolve, reject) => {
-
-            const id_produto = item.id_produto || item.id; 
+            const id_produto = item.id_produto; 
             const quantidade = item.quantidade;
-            const tipo = item.tipo || 'SAIDA';
+            const tipo = item.tipo; // 'ENTRADA' ou 'SAIDA'
             const observacao = item.observacao || 'Sem observação';
-            const usuario = item.usuario || 'Desconhecido'; // <--- NOVO CAMPO
+            const usuario = item.usuario || 'Desconhecido';
 
-            // 1. Pega o nome do produto
+            // 1. Busca nome do produto
             const sqlBuscaNome = "SELECT nome_prod FROM produto WHERE id = ?";
             
             connection.query(sqlBuscaNome, [id_produto], (err, result) => {
                 if (err) return reject(err);
-              
                 const nomeProduto = result.length > 0 ? result[0].nome_prod : "Produto removido";
 
-                // 2. Insere na tabela MOVIMENTACAO com o nome do USUARIO
+                // 2. Insere no Histórico
                 const sqlMov = `
-                    INSERT INTO movimentacao 
-                    (id_produto, nome_produto, tipo, quantidade, observacao, usuario)
+                    INSERT INTO movimentacao (id_produto, nome_produto, tipo, quantidade, observacao, usuario)
                     VALUES (?, ?, ?, ?, ?, ?)
                 `;
 
                 connection.query(sqlMov, [id_produto, nomeProduto, tipo, quantidade, observacao, usuario], (errInsert) => {
                     if (errInsert) return reject(errInsert);
 
-                    // 3. Atualiza o estoque na tabela PRODUTO
+                    // 3. Atualiza o Estoque (SOMA ou SUBTRAI)
                     let sqlUpdate = "";
-                    if (tipo === 'ENTRADA') 
+                    
+                    if (tipo === 'ENTRADA') {
+                        // SOMA AO ESTOQUE
                         sqlUpdate = "UPDATE produto SET quantidade = quantidade + ? WHERE id = ?";
-                    else 
+                    } else {
+                        // SUBTRAI DO ESTOQUE
                         sqlUpdate = "UPDATE produto SET quantidade = quantidade - ? WHERE id = ?";
+                    }
 
                     connection.query(sqlUpdate, [quantidade, id_produto], (errUpdate) => {
                         if (errUpdate) return reject(errUpdate);
@@ -203,8 +204,8 @@ app.post('/movimentacao', (req, res) => {
     Promise.all(promessas)
         .then(() => res.send("Movimentação registrada com sucesso."))
         .catch(err => {
-            console.error("Erro ao registrar movimentação:", err);
-            res.status(500).send("Erro ao registrar movimentação.");
+            console.error("Erro:", err);
+            res.status(500).send("Erro ao processar.");
         });
 });
 

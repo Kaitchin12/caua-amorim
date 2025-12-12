@@ -1,45 +1,41 @@
-
+/* --- CONFIGURAÇÕES --- */
 const API_URL = "http://localhost:2005"; 
-
-// Elementos do DOM
-const modalSaida = document.getElementById("modalSaida");
-const btnNovaSaida = document.getElementById("btnNovaSaida");
-const btnConfirmar = document.getElementById("btnConfirmarSaida");
-const spanClose = document.querySelector(".close-saida");
-const listaContainer = document.getElementById("listaProdutosSaida");
-const tabelaMovimentacoes = document.getElementById("tabela-movimentacoes");
-
-
 const nomeUsuarioLogado = localStorage.getItem("usuarioLogado") || "Usuário não identificado";
 
+// Elementos GERAIS
+const tabelaMovimentacoes = document.getElementById("tabela-movimentacoes");
 
+// Elementos Modal SAÍDA
+const modalSaida = document.getElementById("modalSaida");
+const btnNovaSaida = document.getElementById("btnNovaSaida");
+const btnConfirmarSaida = document.getElementById("btnConfirmarSaida");
+const spanCloseSaida = document.querySelector(".close-saida");
+const listaContainerSaida = document.getElementById("listaProdutosSaida");
+
+// Elementos Modal ENTRADA
+const modalEntrada = document.getElementById("modalEntrada");
+const btnNovaEntrada = document.getElementById("btnNovaEntrada");
+const btnConfirmarEntrada = document.getElementById("btnConfirmarEntrada");
+const spanCloseEntrada = document.querySelector(".close-entrada");
+const listaContainerEntrada = document.getElementById("listaProdutosEntrada");
+
+
+/* --- AO CARREGAR A PÁGINA --- */
 window.onload = function() {
-    
-    // 1. Mostrar nome do usuário no topo (Cabeçalho)
+    // 1. Exibir nome do usuário
     const pUsuario = document.querySelector(".paragrafo-para-usuario");
-    if (pUsuario) {
-        if (localStorage.getItem("usuarioLogado")) {
-            pUsuario.innerHTML = `Olá, <strong>${nomeUsuarioLogado}</strong>`;
-        } else {
-            pUsuario.innerText = "Bem-vindo";
-        }
-    }
+    if (pUsuario) pUsuario.innerHTML = `Olá, <strong>${nomeUsuarioLogado}</strong>`;
 
-    // 2. Configurar botão de Logout (Limpar memória)
+    // 2. Logout
     const btnLogout = document.querySelector('a[href="login.html"]');
-    if (btnLogout) {
-        btnLogout.onclick = function() {
-            localStorage.removeItem("usuarioLogado");
-        };
-    }
+    if (btnLogout) btnLogout.onclick = () => localStorage.removeItem("usuarioLogado");
 
-    // 3. Carregar a tabela
-    if (tabelaMovimentacoes) {
-        carregarTabelaMovimentacoes();
-    }
+    // 3. Carregar Tabela
+    if (tabelaMovimentacoes) carregarTabelaMovimentacoes();
 };
 
-/* --- FUNÇÃO: CARREGAR HISTÓRICO --- */
+
+/* --- 1. CARREGAR TABELA DE HISTÓRICO --- */
 async function carregarTabelaMovimentacoes() {
     try {
         const response = await fetch(`${API_URL}/mostrarMovimentacao`);
@@ -48,180 +44,154 @@ async function carregarTabelaMovimentacoes() {
         tabelaMovimentacoes.innerHTML = "";
 
         if (dados.length === 0) {
-            tabelaMovimentacoes.innerHTML = "<tr><td colspan='5' style='text-align:center'>Nenhuma movimentação encontrada.</td></tr>";
+            tabelaMovimentacoes.innerHTML = "<tr><td colspan='5' style='text-align:center'>Sem movimentações.</td></tr>";
             return;
         }
 
         dados.forEach(mov => {
             const dataObj = new Date(mov.data_movimentacao);
-            const dataFormatada = dataObj.toLocaleDateString('pt-BR') + ' ' + dataObj.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-            const corTipo = mov.tipo === 'ENTRADA' ? 'green' : 'red'; // Se for SAIDA fica vermelho
+            const dataFormatada = dataObj.toLocaleDateString('pt-BR') + ' ' + dataObj.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
             
-            // Verifica se tem nome do produto, senão usa o ID
-            const nomeFerramenta = mov.nome_produto || `ID: ${mov.id_produto}`;
-            
-            // Verifica se veio o nome do usuário do banco, senão mostra 'Sistema'
-            const nomeUsuarioResponsavel = mov.usuario || 'Sistema';
+            // Cor: Verde para Entrada, Vermelho para Saída
+            const cor = mov.tipo === 'ENTRADA' ? 'green' : 'red';
+            const ferramenta = mov.nome_produto || `ID: ${mov.id_produto}`;
+            const usuario = mov.usuario || 'Sistema';
 
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${dataFormatada}</td>
-                <td style="color: ${corTipo}; font-weight: bold;">${mov.tipo}</td>
-                <td>${nomeFerramenta}</td>
-                <td>${mov.quantidade}</td>
-                <td>${nomeUsuarioResponsavel}</td> 
+            const row = `
+                <tr>
+                    <td>${dataFormatada}</td>
+                    <td style="color: ${cor}; font-weight: bold;">${mov.tipo}</td>
+                    <td>${ferramenta}</td>
+                    <td>${mov.quantidade}</td>
+                    <td>${usuario}</td>
+                </tr>
             `;
-
-            tabelaMovimentacoes.appendChild(row);
+            tabelaMovimentacoes.innerHTML += row;
         });
-
-    } catch (error) {
-        console.error("Erro ao carregar tabela:", error);
-        if(tabelaMovimentacoes) {
-            tabelaMovimentacoes.innerHTML = "<tr><td colspan='5' style='text-align:center; color:red'>Erro ao carregar dados do servidor.</td></tr>";
-        }
-    }
+    } catch (error) { console.error(error); }
 }
 
-/* --- LOGICA DO MODAL --- */
-if (btnNovaSaida) {
-    btnNovaSaida.onclick = function() {
-        modalSaida.style.display = "flex";
-        carregarProdutosNoModal(); 
-    }
-}
-
-if (spanClose) {
-    spanClose.onclick = function() {
-        modalSaida.style.display = "none";
-    }
-}
-
-window.onclick = function(event) {
-    if (event.target == modalSaida) {
-        modalSaida.style.display = "none";
-    }
-}
-
-/* --- CARREGAR PRODUTOS NO MODAL --- */
-async function carregarProdutosNoModal() {
-    listaContainer.innerHTML = "<p>Carregando estoque...</p>";
-
+/* --- FUNÇÃO GENÉRICA PARA CARREGAR PRODUTOS NOS MODAIS --- */
+async function carregarProdutosNoModal(container, tipoMovimentacao) {
+    container.innerHTML = "<p>Carregando...</p>";
     try {
         const response = await fetch(`${API_URL}/mostrarProduto`);
         const produtos = await response.json();
-
-        listaContainer.innerHTML = ""; 
-
-        if (produtos.length === 0) {
-            listaContainer.innerHTML = "<p>Nenhum produto cadastrado.</p>";
-            return;
-        }
+        container.innerHTML = ""; 
 
         produtos.forEach(prod => {
-            const divRow = document.createElement("div");
-            divRow.className = "lista-item-row";
+            // Se for SAIDA, limitamos o max pelo estoque. Se for ENTRADA, não tem limite.
+            const atributoMax = tipoMovimentacao === 'SAIDA' ? `max="${prod.quantidade}"` : '';
+            const textoDisp = tipoMovimentacao === 'SAIDA' ? `(Disp: ${prod.quantidade})` : `(Atual: ${prod.quantidade})`;
+            
+            // Cria a linha
+            const div = document.createElement("div");
+            div.className = "lista-item-row";
+            div.style = "display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #eee; padding:5px;";
+            
+            div.innerHTML = `
+                <label style="flex:1;">
+                    <input type="checkbox" value="${prod.id}" data-estoque="${prod.quantidade}">
+                    ${prod.nome_prod} ${textoDisp}
+                </label>
+                <input type="number" class="input-qtd" placeholder="Qtd" min="1" ${atributoMax} disabled style="width:70px;">
+            `;
 
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.value = prod.id;
-            checkbox.dataset.estoque = prod.quantidade; 
-            checkbox.style.marginRight = "10px";
-
-            const label = document.createElement("span");
-            label.style.flexGrow = "1"; 
-            label.innerText = `${prod.nome_prod} (Disponível: ${prod.quantidade})`;
-
-            const inputQtd = document.createElement("input");
-            inputQtd.type = "number";
-            inputQtd.className = "input-qtd-modal";
-            inputQtd.placeholder = "Qtd";
-            inputQtd.min = "1";
-            inputQtd.max = prod.quantidade; 
-            inputQtd.disabled = true; 
-
-            checkbox.addEventListener("change", function() {
-                inputQtd.disabled = !this.checked;
-                if (this.checked) {
-                    inputQtd.focus();
-                } else {
-                    inputQtd.value = ""; 
-                }
+            // Lógica do Checkbox
+            const chk = div.querySelector("input[type='checkbox']");
+            const input = div.querySelector(".input-qtd");
+            
+            chk.addEventListener("change", () => {
+                input.disabled = !chk.checked;
+                if(chk.checked) input.focus(); else input.value = "";
             });
 
-            divRow.appendChild(checkbox);
-            divRow.appendChild(label);
-            divRow.appendChild(inputQtd);
-            listaContainer.appendChild(divRow);
+            container.appendChild(div);
         });
-
-    } catch (error) {
-        console.error("Erro ao buscar produtos:", error);
-        listaContainer.innerHTML = "<p style='color:red'>Erro ao carregar produtos.</p>";
-    }
+    } catch (error) { console.error(error); }
 }
 
-/* --- BOTÃO CONFIRMAR SAÍDA --- */
-btnConfirmar.onclick = async function() {
-    const checkboxes = document.querySelectorAll("#listaProdutosSaida input[type='checkbox']:checked");
-    
-    if (checkboxes.length === 0) {
-        alert("Selecione pelo menos um item para dar baixa.");
-        return;
-    }
 
-    const itensParaBaixa = [];
-    let erroValidacao = false;
+/* --- 2. LÓGICA DE SAÍDA --- */
+if(btnNovaSaida) {
+    btnNovaSaida.onclick = () => {
+        modalSaida.style.display = "flex";
+        carregarProdutosNoModal(listaContainerSaida, 'SAIDA');
+    };
+}
+if(spanCloseSaida) spanCloseSaida.onclick = () => modalSaida.style.display = "none";
+
+if(btnConfirmarSaida) {
+    btnConfirmarSaida.onclick = () => processarMovimentacao(listaContainerSaida, 'SAIDA');
+}
+
+
+/* --- 3. LÓGICA DE ENTRADA (NOVA) --- */
+if(btnNovaEntrada) {
+    btnNovaEntrada.onclick = () => {
+        modalEntrada.style.display = "flex";
+        carregarProdutosNoModal(listaContainerEntrada, 'ENTRADA');
+    };
+}
+if(spanCloseEntrada) spanCloseEntrada.onclick = () => modalEntrada.style.display = "none";
+
+if(btnConfirmarEntrada) {
+    btnConfirmarEntrada.onclick = () => processarMovimentacao(listaContainerEntrada, 'ENTRADA');
+}
+
+// Fechar ao clicar fora
+window.onclick = (e) => {
+    if(e.target == modalSaida) modalSaida.style.display = "none";
+    if(e.target == modalEntrada) modalEntrada.style.display = "none";
+};
+
+
+/* --- 4. FUNÇÃO CENTRAL DE ENVIO (FETCH) --- */
+async function processarMovimentacao(container, tipo) {
+    const checkboxes = container.querySelectorAll("input[type='checkbox']:checked");
+    if (checkboxes.length === 0) return alert("Selecione itens.");
+
+    const itens = [];
+    let erro = false;
 
     checkboxes.forEach(chk => {
-        const row = chk.parentElement; 
-        const input = row.querySelector(".input-qtd-modal");
+        const row = chk.parentElement.parentElement;
+        const input = row.querySelector(".input-qtd");
         const qtd = parseInt(input.value);
-        const estoqueAtual = parseInt(chk.dataset.estoque);
+        const estoque = parseInt(chk.dataset.estoque);
 
-        if (!qtd || qtd <= 0) {
-            alert("A quantidade deve ser maior que zero.");
-            erroValidacao = true;
-            return;
-        }
-        if (qtd > estoqueAtual) {
-            alert(`Erro: Você tentou retirar ${qtd}, mas só tem ${estoqueAtual} no estoque.`);
-            erroValidacao = true;
-            return;
+        if (!qtd || qtd <= 0) { alert("Quantidade inválida."); erro = true; return; }
+        
+        // Validação só para SAÍDA
+        if (tipo === 'SAIDA' && qtd > estoque) { 
+            alert("Estoque insuficiente para um dos itens."); erro = true; return; 
         }
 
-        // --- PREPARA O PACOTE PARA O SERVIDOR ---
-        itensParaBaixa.push({
+        itens.push({
             id_produto: chk.value,
-            tipo: "SAIDA DO ESTOQUE", 
+            tipo: tipo === 'SAIDA' ? "SAIDA" : "ENTRADA", // Define o tipo aqui
             quantidade: qtd,
-            observacao: "Saída via Painel Web",
-            usuario: nomeUsuarioLogado // <--- ENVIA O NOME DO LOGADO PARA O BANCO SALVAR
+            observacao: `${tipo} via Web`,
+            usuario: nomeUsuarioLogado
         });
     });
 
-    if (erroValidacao) return; 
+    if (erro) return;
 
     try {
         const response = await fetch(`${API_URL}/movimentacao`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(itensParaBaixa) 
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(itens)
         });
 
         if (response.ok) {
-            alert(`Sucesso! Saída registrada por: ${nomeUsuarioLogado}`);
-            modalSaida.style.display = "none";
-            window.location.reload(); 
+            alert(`${tipo} registrada com sucesso!`);
+            window.location.reload();
         } else {
-            const msg = await response.text();
-            alert("Erro no servidor: " + msg);
+            alert("Erro no servidor.");
         }
-
     } catch (error) {
-        console.error("Erro na requisição:", error);
-        alert("Erro ao conectar com o servidor.");
+        alert("Erro de conexão.");
     }
-};
+}
